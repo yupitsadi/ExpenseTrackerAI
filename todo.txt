@@ -1,0 +1,32 @@
+expense-tracker-backend/
+├── controller/
+│   └── AuthController.java
+│   └── ExpenseController.java
+│
+├── dto/
+│   └── AuthRequest.java, ExpenseRequest.java, AuthResponse.java
+│
+├── model/
+│   └── User.java          # @Document for Mongo
+│   └── Expense.java
+│
+├── repository/
+│   └── UserRepository.java    # extends MongoRepository
+│   └── ExpenseRepository.java
+│
+├── security/
+│   └── JwtUtil.java
+│   └── JwtFilter.java
+│   └── SecurityConfig.java
+│
+├── service/
+│   └── AuthService.java
+│   └── ExpenseService.java
+│
+├── exception/
+│   └── GlobalExceptionHandler.java
+│
+├── config/
+│   └── CorsConfig.java
+│
+└── application.yml          # Includes MongoDB config

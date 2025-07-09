@@ -1,0 +1,22 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.ai.vectorstore.mongodb.autoconfigure.MongoDBAtlasVectorStoreAutoConfiguration
+  data:
+    mongodb:
+      database: ExpenseTracker
+      uri: mongodb+srv://adityacse:KMWhennnFE2G6qQN@aditya.j10jaeb.mongodb.net/
+
+
+server:
+  port: 8080
+
+# Optional: JWT and logging config
+jwt:
+  secret: mySuperSecretKey
+  expiration: 3600000  # 1 hour in ms
+
+logging:
+  level:
+    root: INFO
+    com.expensetracker: DEBUG
+
