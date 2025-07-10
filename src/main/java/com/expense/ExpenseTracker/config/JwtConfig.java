@@ -11,4 +11,6 @@ import org.springframework.stereotype.Component;
 @Setter
 public class JwtConfig {
     private String secret;
+    private long expiration;
+    private String issuer;
 }
