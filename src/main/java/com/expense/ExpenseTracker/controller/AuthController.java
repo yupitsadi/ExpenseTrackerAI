@@ -1,5 +1,7 @@
 package com.expense.ExpenseTracker.controller;
 
+import com.expense.ExpenseTracker.dto.AuthRequest;
+import com.expense.ExpenseTracker.dto.AuthResponse;
 import com.expense.ExpenseTracker.model.User;
 import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.JwtService;
@@ -10,10 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,29 +24,33 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> resisterUser(@RequestBody User user){
-        if(userRepository.findByEmail(user.getEmail()).isPresent()){
-            return ResponseEntity.badRequest().body("Email already registered");
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody AuthRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().build(); // or return error message
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
-        return ResponseEntity.ok("User registered Successfully");
+
+        // Generate token for the new user
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        String token = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
-        Authentication authentication;
-        authentication = authenticationManager.authenticate(
+    public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
+                        request.getEmail(),
+                        request.getPassword()
                 )
         );
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwt = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(jwt);
+        String token = jwtService.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
-
-
 }

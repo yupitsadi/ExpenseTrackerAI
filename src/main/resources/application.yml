@@ -12,7 +12,7 @@ server:
 
 # Optional: JWT and logging config
 jwt:
-  secret: mySuperSecretKey
+  secret: b70cdb158c788402d4f4729a4d0a98a8da40c57b
   expiration: 3600000  # 1 hour in ms
 
 logging:
