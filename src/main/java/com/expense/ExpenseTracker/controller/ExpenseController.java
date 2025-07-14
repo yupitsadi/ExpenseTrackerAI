@@ -1,12 +1,20 @@
 package com.expense.ExpenseTracker.controller;
 
 import com.expense.ExpenseTracker.dto.AddExprnsesRequest;
+import com.expense.ExpenseTracker.dto.DashboardRequest;
+import com.expense.ExpenseTracker.dto.DashboardSummaryResponse;
+import com.expense.ExpenseTracker.dto.ExpenseSearchRequest;
 import com.expense.ExpenseTracker.model.Expenses;
+import com.expense.ExpenseTracker.model.User;
+import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.ExpenseService;
+import com.expense.ExpenseTracker.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -15,29 +23,46 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @Autowired
+    private UserUtils utils;
+
+    @Autowired
     public ExpenseController(ExpenseService expenseService) {
         this.expenseService = expenseService;
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Expenses> addExpense(@RequestBody AddExprnsesRequest request, @RequestParam String userId){
-        Expenses newExp = expenseService.addExpense(request,userId);
+    public ResponseEntity<Expenses> addExpense(@RequestBody AddExprnsesRequest request){
+        Expenses newExp = expenseService.addExpense(request);
         return ResponseEntity.ok(newExp);
     }
 
     @GetMapping
-    public List<Expenses> getAllExpenese(@RequestParam String userId){
-        return expenseService.getAllExpenese(userId);
+    public List<Expenses> getAllExpenese(){
+        return expenseService.getAllExpenese();
     }
 
     @PutMapping("/updateExpenses")
-    public Expenses updateExpenses(@RequestParam String id, @RequestBody Expenses updateExpenses, @RequestParam String userId){
-        return expenseService.updateExpenses(id,updateExpenses,userId);
+    public Expenses updateExpenses(@RequestParam String id, @RequestBody Expenses updateExpenses){
+        return expenseService.updateExpenses(id,updateExpenses);
     }
 
     @DeleteMapping("/deleteExpenses")
-    public boolean deleteTheExpense(@RequestParam String id,@RequestParam String userId){
-        return expenseService.deleteTheExpense(id,userId);
+    public boolean deleteTheExpense(@RequestParam String id){
+        return expenseService.deleteTheExpense(id);
     }
+
+    @PostMapping("/summary")
+    public ResponseEntity<DashboardSummaryResponse> getDashboardSummary(@RequestBody DashboardRequest request) {
+        return ResponseEntity.ok(expenseService.getDashboardSummary(
+                request.getStartDate(), request.getEndDate()
+        ));
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Expenses>> searchExpenses(@RequestBody ExpenseSearchRequest request) {
+        return ResponseEntity.ok(expenseService.searchExpenses(request));
+    }
+
+
 
 }

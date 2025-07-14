@@ -9,18 +9,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-@Document(collection = "epenses")
+@Document(collection = "expenses")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Expenses {
+    private String id;
     private String userId;
     private String title;
-    private Integer amount;
+    private Float amount;
     private String category;
     private Date createdAt;
     private Date updatedAt;
-    private Date DateOfExpense;
+    private Date dateOfExpense;
     private String notes;
 }

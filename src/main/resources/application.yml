@@ -4,7 +4,21 @@ spring:
   data:
     mongodb:
       database: ExpenseTracker
-      uri: mongodb+srv://adityacse:KMWhennnFE2G6qQN@aditya.j10jaeb.mongodb.net/
+      uri: ${MONGO_URI}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    protocol: smtp
+  thymeleaf:
+    cache: false
 
 
 server:

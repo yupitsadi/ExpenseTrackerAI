@@ -30,3 +30,48 @@ expense-tracker-backend/
 │   └── CorsConfig.java
 │
 └── application.yml          # Includes MongoDB config
+
+🔹 Phase 1: Core Expense Features
+
+| Feature                 | Description                                                      |
+| ----------------------- | ---------------------------------------------------------------- |
+| ✅ Expense CRUD          | Already done                                                     |
+| 🔄 Recurring Expenses   | Option to mark expense as repeating monthly/weekly               |
+| 📅 Filter by Date Range | Fetch expenses between two dates (e.g., last 7 days, last month) |
+| 🔎 Search & Filter      | Filter expenses by category, amount range, keywords              |
+| 📊 Dashboard Summary    | Monthly total, category-wise breakdown (backend aggregation)     |
+
+
+🔹 Phase 2: Advanced Functionality
+| Feature             | Description                                                         |
+| ------------------- | ------------------------------------------------------------------- |
+| 🔐 Password Reset   | Add `forgot-password` and `reset-password` flows                    |
+| 📁 File Upload      | Allow users to upload expense receipts (Amazon S3 or local storage) |
+| 📥 Import Expenses  | Upload CSV of expenses and parse into DB                            |
+| 📤 Export Expenses  | Allow download of expenses as CSV or PDF                            |
+| 🌍 Currency Support | Optional multi-currency support + conversion rates                  |
+
+
+🔹 Phase 3: Analytics (Backend)
+| Feature                      | Description                                              |
+| ---------------------------- | -------------------------------------------------------- |
+| 🧮 Total per Category        | Use MongoDB Aggregation to show total spent per category |
+| ⏳ Expense Trends             | Monthly expense trends per category or overall           |
+| 📈 Daily/Monthly Summary     | Expense summaries for dashboard graphs                   |
+| 📊 Pie/Bar Data for Frontend | Provide chart-ready data grouped by time or category     |
+
+
+🔹 Phase 4: UI Integration (Optional if you’re Fullstack)
+🖥️ Auth-based Dashboard (Login → Dashboard with summary cards)
+📆 Date Picker for filtering
+📊 Chart.js or Recharts for graphs
+
+🔥 Bonus Features for Interviews
+| Feature         | What it Shows                               |
+| --------------- | ------------------------------------------- |
+| Scheduled Jobs  | Clean up old data (Quartz/Spring Scheduler) |
+| Rate Limiting   | Using `Bucket4j` or `Redis`                 |
+| Testing         | Unit tests with JUnit + Mockito             |
+| CI/CD           | GitHub Actions for auto-deploy              |
+| Docker          | Dockerize the Spring Boot app               |
+| Swagger/OpenAPI | API documentation & testing                 |
