@@ -8,6 +8,7 @@ import com.expense.ExpenseTracker.service.EmailService;
 import com.expense.ExpenseTracker.service.JwtService;
 import com.expense.ExpenseTracker.service.UserDetailsImpl;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

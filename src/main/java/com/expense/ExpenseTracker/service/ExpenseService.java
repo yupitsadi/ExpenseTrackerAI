@@ -7,9 +7,16 @@ import com.expense.ExpenseTracker.dto.ExpenseSearchRequest;
 import com.expense.ExpenseTracker.model.Expenses;
 import com.expense.ExpenseTracker.repository.ExpenseRepository;
 import com.expense.ExpenseTracker.utils.UserUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -144,6 +151,73 @@ public class ExpenseService {
         String title = request.getTitle() != null ? request.getTitle() : "";
 
         return expenseRepository.searchExpenses(userId, start, end, category, title);
+    }
+
+    public byte[] exportToCSV() {
+        String userId = userUtils.getCurrentUserId();
+        List<Expenses> expenses = expenseRepository.findByUserId(userId);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Date,Category,Amount,Note\n");
+
+        for (Expenses e : expenses) {
+            sb.append(e.getDateOfExpense()).append(",");
+            System.out.println("Date: " + e.getDateOfExpense());
+            sb.append(e.getCategory()).append(",");
+            sb.append(e.getAmount()).append(",");
+            sb.append("\"").append(e.getNotes().replace("\"", "\"\"")).append("\"\n");
+        }
+
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    public byte[] exportToPDF() {
+        String userId = userUtils.getCurrentUserId();
+        List<Expenses> expenses = expenseRepository.findByUserId(userId);
+        System.out.println("1");
+        try (PDDocument document = new PDDocument();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            PDPage page = new PDPage(PDRectangle.LETTER);
+            document.addPage(page);
+            System.out.println("2");
+
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(50, 750);
+                contentStream.showText("Expense Report");
+                contentStream.endText();
+
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                int y = 720;
+
+                contentStream.beginText();
+                contentStream.newLineAtOffset(50, y);
+                contentStream.showText("Date    Category    Amount    Note"); // spaces instead of \t
+                contentStream.endText();
+
+                for (Expenses e : expenses) {
+                    y -= 20;
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(50, y);
+                    contentStream.showText(
+                            String.format("%s    %s    %.2f    %s", // again: use spaces, not tabs
+                                    e.getDateOfExpense(),
+                                    e.getCategory(),
+                                    e.getAmount(),
+                                    e.getNotes()));
+                    contentStream.endText();
+                }
+
+            }
+
+            document.save(out);
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

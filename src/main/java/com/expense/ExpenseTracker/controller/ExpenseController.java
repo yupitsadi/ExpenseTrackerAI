@@ -10,6 +10,9 @@ import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.ExpenseService;
 import com.expense.ExpenseTracker.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +64,28 @@ public class ExpenseController {
     @PostMapping("/search")
     public ResponseEntity<List<Expenses>> searchExpenses(@RequestBody ExpenseSearchRequest request) {
         return ResponseEntity.ok(expenseService.searchExpenses(request));
+    }
+
+    @GetMapping("/csv")
+    public ResponseEntity<byte[]> exportCSV() {
+        byte[] data = expenseService.exportToCSV();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        headers.setContentDispositionFormData("attachment", "expenses.csv");
+
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/pdf")
+    public ResponseEntity<byte[]> exportPDF() {
+        byte[] data = expenseService.exportToPDF();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "expenses.pdf");
+
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
     }
 
 
