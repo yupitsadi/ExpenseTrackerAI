@@ -2,6 +2,7 @@ package com.expense.ExpenseTracker.service;
 
 
 import com.expense.ExpenseTracker.dto.AddExprnsesRequest;
+import com.expense.ExpenseTracker.dto.CategoryTotalDTO;
 import com.expense.ExpenseTracker.dto.DashboardSummaryResponse;
 import com.expense.ExpenseTracker.dto.ExpenseSearchRequest;
 import com.expense.ExpenseTracker.model.Expenses;
@@ -13,6 +14,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -46,6 +46,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.apache.pdfbox:pdfbox:2.0.30'
 	implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
 
 }
