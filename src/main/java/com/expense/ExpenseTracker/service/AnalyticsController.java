@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analytics")
@@ -24,5 +25,17 @@ public class AnalyticsController {
     @GetMapping("/monthly-trends")
     public ResponseEntity<List<ExpenseTrendDTO>> getMonthlyTrends() {
         return ResponseEntity.ok(analyticsService.getMonthlyTrends());
+    }
+
+    @GetMapping("/monthly-summary")
+    public ResponseEntity<List<Map>> getMonthlySummary() {
+        List<Map> summary = analyticsService.getMonthlySummary();
+        return ResponseEntity.ok(summary);
+    }
+
+    @GetMapping("/category-summary")
+    public ResponseEntity<List<Map>> getCategorySummary() {
+        List<Map> summary = analyticsService.getCategoryWiseSummary();
+        return ResponseEntity.ok(summary);
     }
 }

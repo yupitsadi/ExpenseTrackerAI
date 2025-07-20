@@ -7,8 +7,9 @@ import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.EmailService;
 import com.expense.ExpenseTracker.service.JwtService;
 import com.expense.ExpenseTracker.service.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,8 +45,8 @@ public class AuthController {
         // Generate token for the new user
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
         String token = jwtService.generateToken(userDetails);
-
-        return ResponseEntity.ok(new AuthResponse(token));
+        String userId = userDetails.getUser().getId();
+        return ResponseEntity.ok(new AuthResponse(token,userId));
     }
 
     @PostMapping("/login")
@@ -58,7 +60,21 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String token = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(token));
+        String userId = userDetails.getUser().getId();
+        return ResponseEntity.ok(new AuthResponse(token,userId));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/forgot-password")
@@ -94,6 +110,19 @@ public class AuthController {
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);
+    }
+
+    @GetMapping("/userInfo")
+    public Map<String,String> getUserInfo(){
+        UserDetailsImpl userDetails = null;
+        Map<String ,String> UserInfo = Map.of();
+        String email = String.valueOf(userDetails.getUser().getEmail());
+        String id  = String.valueOf(userDetails.getUser().getId());
+        String userId = String.valueOf(userDetails.getUser());
+        getUserInfo().put("email" ,email);
+        getUserInfo().put("id", id);
+        getUserInfo().put("userInfo", userId);
+        return UserInfo;
     }
 
 }
