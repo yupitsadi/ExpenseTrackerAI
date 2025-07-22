@@ -4,7 +4,7 @@ spring:
   data:
     mongodb:
       database: ExpenseTracker
-      uri: ${MONGO_URI}
+      uri: mongodb+srv://adityacse:KMWhennnFE2G6qQN@aditya.j10jaeb.mongodb.net/ExpenseTracker
   mail:
     host: smtp.gmail.com
     port: 587

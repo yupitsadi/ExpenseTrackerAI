@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest request) {
+    public ResponseEntity<Map<String, String>> loginUser(@RequestBody AuthRequest request, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -61,7 +62,20 @@ public class AuthController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String token = jwtService.generateToken(userDetails);
         String userId = userDetails.getUser().getId();
-        return ResponseEntity.ok(new AuthResponse(token,userId));
+
+        // Set JWT as HTTP-only cookie named 'token'
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .httpOnly(true)
+                .secure(false) // Set to true in production (HTTPS)
+                .path("/")
+                .maxAge(24 * 60 * 60) // 1 day
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        // Return only userId in the response body
+        return ResponseEntity.ok(Map.of("userId", userId));
     }
 
     @PostMapping("/logout")
@@ -113,16 +127,21 @@ public class AuthController {
     }
 
     @GetMapping("/userInfo")
-    public Map<String,String> getUserInfo(){
-        UserDetailsImpl userDetails = null;
-        Map<String ,String> UserInfo = Map.of();
-        String email = String.valueOf(userDetails.getUser().getEmail());
-        String id  = String.valueOf(userDetails.getUser().getId());
-        String userId = String.valueOf(userDetails.getUser());
-        getUserInfo().put("email" ,email);
-        getUserInfo().put("id", id);
-        getUserInfo().put("userInfo", userId);
-        return UserInfo;
+    public ResponseEntity<Map<String, String>> getUserInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        Map<String, String> userInfo = Map.of(
+                "id", user.getId(),
+                "email", user.getEmail()
+        );
+        return ResponseEntity.ok(userInfo);
     }
+
+
 
 }
