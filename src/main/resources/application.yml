@@ -20,6 +20,11 @@ spring:
   thymeleaf:
     cache: false
 
+  openai:
+    api:
+      key: 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
+      timeout: 60
+
 
 server:
   port: 8080

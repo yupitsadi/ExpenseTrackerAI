@@ -4,11 +4,13 @@ import com.expense.ExpenseTracker.dto.AddExprnsesRequest;
 import com.expense.ExpenseTracker.dto.DashboardRequest;
 import com.expense.ExpenseTracker.dto.DashboardSummaryResponse;
 import com.expense.ExpenseTracker.dto.ExpenseSearchRequest;
+import com.expense.ExpenseTracker.messaging.RabbitMQProducer;
 import com.expense.ExpenseTracker.model.Expenses;
 import com.expense.ExpenseTracker.model.User;
 import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.ExpenseService;
 import com.expense.ExpenseTracker.utils.UserUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("api/expenses")
 public class ExpenseController {
     private final ExpenseService expenseService;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserUtils utils;
@@ -86,6 +89,13 @@ public class ExpenseController {
         headers.setContentDispositionFormData("attachment", "expenses.pdf");
 
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/email-report")
+    public ResponseEntity<String> sendEmailReport() {
+        String userId = utils.getCurrentUserId();
+        rabbitTemplate.convertAndSend("email-exchange", "email.queue", userId);
+        return ResponseEntity.ok("Email report sent successfully");
     }
 
 

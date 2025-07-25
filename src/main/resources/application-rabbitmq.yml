@@ -1,0 +1,37 @@
+# RabbitMQ Configuration
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: auto
+        default-requeue-rejected: false
+        concurrency: 5
+        max-concurrency: 10
+        prefetch: 10
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          max-interval: 10000ms
+          multiplier: 2.0
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000ms
+        max-attempts: 3
+        max-interval: 10000ms
+        multiplier: 2.0
+
+# Custom queue names (with defaults)
+rabbitmq:
+  notification:
+    queue: notification.queue
+  email:
+    queue: email.queue
+  analytics:
+    queue: analytics.queue
