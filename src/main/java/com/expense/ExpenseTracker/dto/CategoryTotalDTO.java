@@ -1,12 +1,12 @@
 package com.expense.ExpenseTracker.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class CategoryTotalDTO {
     private String category;
     private double total;

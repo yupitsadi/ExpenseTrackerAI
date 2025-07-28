@@ -1,15 +1,24 @@
 package com.expense.ExpenseTracker.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class EmailMessage {
     private String to;
     private String subject;
-    private String body;
-    private byte[] attachmentBytes;
+    private String content;
+    private byte[] attachment;
+    private String attachmentName;
+    
+    public EmailMessage(String to, String subject, String content, byte[] attachment) {
+        this.to = to;
+        this.subject = subject;
+        this.content = content;
+        this.attachment = attachment;
+        this.attachmentName = "expense_report.pdf";
+    }
 }

@@ -1,20 +1,19 @@
 package com.expense.ExpenseTracker.service;
 
-
-import com.expense.ExpenseTracker.dto.AddExprnsesRequest;
-import com.expense.ExpenseTracker.dto.CategoryTotalDTO;
-import com.expense.ExpenseTracker.dto.DashboardSummaryResponse;
-import com.expense.ExpenseTracker.dto.ExpenseSearchRequest;
+import com.expense.ExpenseTracker.dto.*;
 import com.expense.ExpenseTracker.model.Expenses;
 import com.expense.ExpenseTracker.repository.ExpenseRepository;
 import com.expense.ExpenseTracker.utils.UserUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,12 +25,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ExpenseService {
     @Autowired
     private ExpenseRepository expenseRepository;
+    private EmailMessage emailMessage;
 
     @Autowired
     private UserUtils userUtils;
+
+    @Autowired
+    private RabbitTemplate rabbitMQProducer;
+
+    private final ObjectMapper objectMapper;
+
 
     public Expenses addExpense(AddExprnsesRequest request){
         String userId = userUtils.getCurrentUserId();
@@ -222,6 +229,78 @@ public class ExpenseService {
         }
     }
 
+    public void sendReportToUser(){
+            String userId = userUtils.getCurrentUserId();
+            String email = userUtils.getCurrentEmailId().getEmail();
+            byte[] pdfBytes = generateAnalyticsPdf();
+            EmailMessage emailMessage = new EmailMessage(
+                    email,
+                    "Your Monthly Expense Report",
+                    "Please find attached your monthly expense report.",
+                    pdfBytes
+            );
+            try {
+                String jsonMessage = objectMapper.writeValueAsString(emailMessage);
+                rabbitMQProducer.convertAndSend("email.exchange", "email.routingKey", jsonMessage);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+    }
 
 
+    private byte[] generateAnalyticsPdf() {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+            
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 16);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(100, 700);
+                contentStream.showText("Expense Analytics Report");
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.newLineAtOffset(0, -30);
+                contentStream.showText("Generated on: " + new Date());
+                contentStream.newLineAtOffset(0, -20);
+
+                List<CategoryTotalDTO> categoryTotals = getCategoryTotals(userUtils.getCurrentUserId());
+                contentStream.showText("Expense by Category:");
+                contentStream.newLineAtOffset(0, -20);
+                
+                for (CategoryTotalDTO category : categoryTotals) {
+                    contentStream.showText(String.format("- %s: $%.2f", 
+                        category.getCategory(), category.getTotal()));
+                    contentStream.newLineAtOffset(0, -15);
+                }
+                
+                contentStream.endText();
+            }
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            document.save(baos);
+            return baos.toByteArray();
+            
+        } catch (IOException e) {
+            throw new RuntimeException("Error generating PDF report", e);
+        }
+    }
+
+    private List<CategoryTotalDTO> getCategoryTotals(String userId) {
+        List<Expenses> expenses = expenseRepository.findByUserId(userId);
+        Map<String, Float> categoryTotals = new HashMap<>();
+        for (Expenses exp : expenses) {
+            categoryTotals.put(
+                    exp.getCategory(),
+                    categoryTotals.getOrDefault(exp.getCategory(), 0f) + exp.getAmount()
+            );
+        }
+        List<CategoryTotalDTO> result = new ArrayList<>();
+        for (Map.Entry<String, Float> entry : categoryTotals.entrySet()) {
+            CategoryTotalDTO dto = new CategoryTotalDTO();
+            dto.setCategory(entry.getKey());
+            dto.setTotal(entry.getValue());
+            result.add(dto);
+        }
+        return result;
+    }
 }

@@ -10,16 +10,15 @@ import com.expense.ExpenseTracker.model.User;
 import com.expense.ExpenseTracker.repository.UserRepository;
 import com.expense.ExpenseTracker.service.ExpenseService;
 import com.expense.ExpenseTracker.utils.UserUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -93,11 +92,9 @@ public class ExpenseController {
 
     @GetMapping("/email-report")
     public ResponseEntity<String> sendEmailReport() {
-        String userId = utils.getCurrentUserId();
-        rabbitTemplate.convertAndSend("email-exchange", "email.queue", userId);
-        return ResponseEntity.ok("Email report sent successfully");
+        expenseService.sendReportToUser(); // No email logic here
+        return ResponseEntity.ok("Email report generation started");
     }
-
 
 
 }
